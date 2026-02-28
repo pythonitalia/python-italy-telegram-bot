@@ -23,6 +23,7 @@ class InMemoryRepository(AsyncRepository):
         self._username_to_user_id: dict[str, int] = {}
         self._welcomed: set[tuple[int, int]] = set()
         self._welcome_delays: dict[int, int] = {}
+        self._welcome_message_map: dict[tuple[int, int], int] = {}
 
     async def add_pending_verification(self, user_id: int, chat_id: int) -> None:
         self._pending.add((user_id, chat_id))
@@ -225,3 +226,18 @@ class InMemoryRepository(AsyncRepository):
             self._welcome_delays.pop(chat_id, None)
         else:
             self._welcome_delays[chat_id] = minutes
+
+    # -- Welcome message tracking --
+
+    async def store_welcome_message(
+        self, chat_id: int, message_id: int, user_id: int
+    ) -> None:
+        self._welcome_message_map[(chat_id, message_id)] = user_id
+
+    async def get_welcome_message_user(
+        self, chat_id: int, message_id: int
+    ) -> int | None:
+        return self._welcome_message_map.get((chat_id, message_id))
+
+    async def delete_welcome_message(self, chat_id: int, message_id: int) -> None:
+        self._welcome_message_map.pop((chat_id, message_id), None)

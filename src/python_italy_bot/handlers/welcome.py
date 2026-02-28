@@ -52,6 +52,20 @@ async def _delete_welcome_message(context: ContextTypes.DEFAULT_TYPE) -> None:
             "Could not delete welcome message %s in chat %s: %s", message_id, chat_id, e
         )
 
+    # Clean up in-memory mapping
+    welcome_map: dict[tuple[int, int], int] = context.bot_data.get(
+        "welcome_message_map", {}
+    )
+    welcome_map.pop((chat_id, message_id), None)
+
+    # Clean up database mapping
+    captcha_service: CaptchaService | None = context.bot_data.get("captcha_service")
+    if captcha_service is not None:
+        try:
+            await captcha_service.delete_welcome_message(chat_id, message_id)
+        except Exception as e:
+            logger.debug("Could not delete welcome message mapping from DB: %s", e)
+
 
 async def _handle_new_member(
     update: Update,
@@ -148,6 +162,12 @@ async def _handle_new_member(
     # Store welcome message -> user mapping for ban-by-reply
     welcome_map = context.bot_data.setdefault("welcome_message_map", {})
     welcome_map[(chat.id, sent.message_id)] = user.id
+
+    # Persist to database so the mapping survives bot restarts
+    try:
+        await captcha_service.store_welcome_message(chat.id, sent.message_id, user.id)
+    except Exception as e:
+        logger.warning("Could not persist welcome message mapping: %s", e)
 
     # Schedule auto-deletion of the welcome message
     delay_minutes = await captcha_service.get_welcome_delay(chat.id)

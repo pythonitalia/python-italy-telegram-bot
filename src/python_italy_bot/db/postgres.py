@@ -398,5 +398,41 @@ class PostgresRepository(AsyncRepository):
                     (chat_id, minutes),
                 )
 
+    # -- Welcome message tracking (ban-by-reply) --
+
+    async def store_welcome_message(
+        self, chat_id: int, message_id: int, user_id: int
+    ) -> None:
+        async with self._pool.connection() as conn:
+            await conn.execute(
+                """
+                INSERT INTO welcome_messages (chat_id, message_id, user_id)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (chat_id, message_id)
+                DO UPDATE SET user_id = EXCLUDED.user_id
+                """,
+                (chat_id, message_id, user_id),
+            )
+
+    async def get_welcome_message_user(
+        self, chat_id: int, message_id: int
+    ) -> int | None:
+        async with self._pool.connection() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "SELECT user_id FROM welcome_messages "
+                    "WHERE chat_id = %s AND message_id = %s",
+                    (chat_id, message_id),
+                )
+                row = await cur.fetchone()
+                return row[0] if row else None
+
+    async def delete_welcome_message(self, chat_id: int, message_id: int) -> None:
+        async with self._pool.connection() as conn:
+            await conn.execute(
+                "DELETE FROM welcome_messages WHERE chat_id = %s AND message_id = %s",
+                (chat_id, message_id),
+            )
+
     async def close(self) -> None:
         await self._pool.close()

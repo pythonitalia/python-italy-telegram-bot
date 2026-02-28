@@ -195,6 +195,25 @@ class Repository(ABC):
         """Set welcome message auto-delete delay. None to reset to default."""
         ...
 
+    # -- Welcome message tracking (ban-by-reply) --
+
+    @abstractmethod
+    def store_welcome_message(
+        self, chat_id: int, message_id: int, user_id: int
+    ) -> None:
+        """Store mapping from a welcome message to the user who triggered it."""
+        ...
+
+    @abstractmethod
+    def get_welcome_message_user(self, chat_id: int, message_id: int) -> int | None:
+        """Get the user_id associated with a welcome message, or None."""
+        ...
+
+    @abstractmethod
+    def delete_welcome_message(self, chat_id: int, message_id: int) -> None:
+        """Remove a welcome message mapping."""
+        ...
+
 
 class AsyncRepository(ABC):
     """Abstract interface for data persistence (async)."""
@@ -384,6 +403,27 @@ class AsyncRepository(ABC):
     @abstractmethod
     async def set_welcome_delay(self, chat_id: int, minutes: int | None) -> None:
         """Set welcome message auto-delete delay. None to reset to default."""
+        ...
+
+    # -- Welcome message tracking (ban-by-reply) --
+
+    @abstractmethod
+    async def store_welcome_message(
+        self, chat_id: int, message_id: int, user_id: int
+    ) -> None:
+        """Store mapping from a welcome message to the user who triggered it."""
+        ...
+
+    @abstractmethod
+    async def get_welcome_message_user(
+        self, chat_id: int, message_id: int
+    ) -> int | None:
+        """Get the user_id associated with a welcome message, or None."""
+        ...
+
+    @abstractmethod
+    async def delete_welcome_message(self, chat_id: int, message_id: int) -> None:
+        """Remove a welcome message mapping."""
         ...
 
     async def close(self) -> None:

@@ -186,3 +186,21 @@ class CaptchaService:
     async def set_welcome_delay(self, chat_id: int, minutes: int | None) -> None:
         """Set welcome message auto-delete delay. None to reset to default."""
         await self._repo.set_welcome_delay(chat_id, minutes)
+
+    # -- Welcome message tracking (ban-by-reply) --
+
+    async def store_welcome_message(
+        self, chat_id: int, message_id: int, user_id: int
+    ) -> None:
+        """Persist mapping from a welcome message to the user who triggered it."""
+        await self._repo.store_welcome_message(chat_id, message_id, user_id)
+
+    async def get_welcome_message_user(
+        self, chat_id: int, message_id: int
+    ) -> int | None:
+        """Get the user_id associated with a welcome message, or None."""
+        return await self._repo.get_welcome_message_user(chat_id, message_id)
+
+    async def delete_welcome_message(self, chat_id: int, message_id: int) -> None:
+        """Remove a welcome message mapping."""
+        await self._repo.delete_welcome_message(chat_id, message_id)

@@ -92,3 +92,11 @@ ALTER TABLE group_settings
 -- Add title column to bot_chats for group name lookup (idempotent).
 ALTER TABLE bot_chats
     ADD COLUMN IF NOT EXISTS title TEXT;
+
+CREATE TABLE IF NOT EXISTS welcome_messages (
+    chat_id BIGINT NOT NULL,
+    message_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (chat_id, message_id)
+);

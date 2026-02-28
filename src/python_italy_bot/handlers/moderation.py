@@ -9,6 +9,7 @@ from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
 from .. import strings
 from ..db.base import AsyncRepository
+from ..services.captcha import CaptchaService
 from ..services.moderation import ModerationService
 
 logger = logging.getLogger(__name__)
@@ -98,6 +99,12 @@ async def _handle_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 "welcome_message_map", {}
             )
             user_id = welcome_map.get((chat.id, reply.message_id))
+            # Fall back to database if not in memory (e.g. after bot restart)
+            if user_id is None:
+                captcha_service: CaptchaService = context.bot_data["captcha_service"]
+                user_id = await captcha_service.get_welcome_message_user(
+                    chat.id, reply.message_id
+                )
         reason = " ".join(args) if args else None
     elif args:
         target = args[0]
