@@ -15,7 +15,7 @@ dependencies = [
 dev = [
     "ruff>=0.8",
     "mypy>=1.0",
-    "pytest>=8.0",
+    "pytest>=9.0.3",
 ]
 
 [project.scripts]
@@ -32,5 +32,5 @@ packages = ["src/python_italy_bot"]
 dev-dependencies = [
     "ruff>=0.8",
     "mypy>=1.0",
-    "pytest>=8.0",
+    "pytest>=9.0.3",
 ]
