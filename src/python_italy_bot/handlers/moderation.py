@@ -362,14 +362,16 @@ async def _handle_unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         can_send_polls=True,
         can_send_other_messages=True,
         can_add_web_page_previews=True,
-        can_change_info=False,
+        can_change_info=True,
         can_invite_users=True,
-        can_pin_messages=False,
+        can_pin_messages=True,
     )
 
     try:
         await context.bot.restrict_chat_member(chat.id, user_id, full_perms)
         await moderation_service.remove_mute(user_id, chat.id)
+        captcha_service: CaptchaService = context.bot_data["captcha_service"]
+        await captcha_service.verify_user_globally(user_id)
         await message.reply_text(strings.UNMUTE_SUCCESS)
     except Exception as e:
         logger.warning("Unmute failed: %s", e)
