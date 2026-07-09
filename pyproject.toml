@@ -7,7 +7,7 @@ requires-python = ">=3.14"
 license = { text = "MIT" }
 dependencies = [
     "python-telegram-bot[job-queue]>=22.0",
-    "python-dotenv>=1.0",
+    "python-dotenv>=1.2.2",
     "psycopg[binary,pool]>=3.2",
 ]
 
